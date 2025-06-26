@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Lightweight NLP Dashboard</title>
+
+    <!-- INVARIANT #5: All JavaScript libraries will be loaded from a CDN -->
+
+    <!-- Library for language detection -->
+
+    <script src="https://unpkg.com/franc@6/franc.min.js"></script>
+
+    <!-- Library for syntax analysis, NER, and more -->
+
+    <script src="https://unpkg.com/compromise@14/builds/compromise.min.js"></script>
+
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+
+        margin: 0;
+
+        padding: 2rem;
+
+        background-color: #f4f7f9;
+
+        color: #333;
+      }
+
+      .container {
+        max-width: 900px;
+
+        margin: 0 auto;
+
+        background-color: #fff;
+
+        padding: 2rem;
+
+        border-radius: 8px;
+
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      h1,
+      h2 {
+        color: #2c3e50;
+
+        border-bottom: 2px solid #3498db;
+
+        padding-bottom: 10px;
+      }
+
+      textarea {
+        width: 100%;
+
+        padding: 10px;
+
+        font-size: 1rem;
+
+        border-radius: 4px;
+
+        border: 1px solid #ccc;
+
+        box-sizing: border-box;
+
+        min-height: 120px;
+
+        margin-bottom: 1rem;
+      }
+
+      button {
+        display: block;
+
+        width: 100%;
+
+        padding: 12px;
+
+        background-color: #3498db;
+
+        color: white;
+
+        border: none;
+
+        border-radius: 4px;
+
+        font-size: 1.1rem;
+
+        cursor: pointer;
+
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      .results-grid {
+        display: grid;
+
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+
+        gap: 1.5rem;
+
+        margin-top: 2rem;
+      }
+
+      .result-card {
+        background-color: #ecf0f1;
+
+        padding: 1.5rem;
+
+        border-radius: 6px;
+
+        border-left: 5px solid #1abc9c;
+      }
+
+      .result-card h3 {
+        margin-top: 0;
+
+        color: #16a085;
+      }
+
+      .result-card pre {
+        background-color: #fff;
+
+        padding: 10px;
+
+        border-radius: 4px;
+
+        white-space: pre-wrap;
+
+        word-wrap: break-word;
+
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- INVARIANT #4: The user interface must include a text input area, a button, and distinct result sections. -->
+
+    <div class="container">
+      <h1>Lightweight NLP Dashboard</h1>
+
+      <p>
+        Enter text below to perform various NLP tasks using client-side
+        JavaScript libraries.
+      </p>
+
+      <textarea
+        id="text-input"
+        placeholder="Type or paste your text here. For example: 'The quick brown fox named Juniper jumps over the lazy dog in London.'"
+      ></textarea>
+
+      <button id="analyze-btn">Analyze Text</button>
+
+      <div class="results-grid">
+        <div class="result-card" style="border-left-color: #3498db">
+          <h3 style="color: #2980b9">Language Detection</h3>
+
+          <pre id="lang-result">N/A</pre>
+        </div>
+
+        <div class="result-card" style="border-left-color: #e67e22">
+          <h3 style="color: #d35400">Syntax Analysis (Nouns & Verbs)</h3>
+
+          <pre id="syntax-result">N/A</pre>
+        </div>
+
+        <div class="result-card" style="border-left-color: #9b59b6">
+          <h3 style="color: #8e44ad">Named Entity Recognition (NER)</h3>
+
+          <pre id="ner-result">N/A</pre>
+        </div>
+
+        <div class="result-card" style="border-left-color: #2ecc71">
+          <h3 style="color: #27ae60">TF-IDF Analysis</h3>
+
+          <pre id="tfidf-result">N/A</pre>
+        </div>
+
+        <div class="result-card" style="border-left-color: #f1c40f">
+          <h3 style="color: #f39c12">Ontology-Based Classification</h3>
+
+          <pre id="ontology-result">N/A</pre>
+        </div>
+
+        <div class="result-card" style="border-left-color: #e74c3c">
+          <h3 style="color: #c0392b">Intent Recognition</h3>
+
+          <pre id="intent-result">N/A</pre>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // INVARIANT #6: The code must be well-commented to explain each step.
+
+      // Declare the compromise library for use.
+
+      const nlp = window.compromise;
+
+      // Get references to DOM elements.
+
+      const analyzeBtn = document.getElementById("analyze-btn");
+
+      const textInput = document.getElementById("text-input");
+
+      // Attach event listener to the button.
+
+      analyzeBtn.addEventListener("click", processAll);
+
+      /**
+
+         * Main function to trigger all NLP analysis tasks.
+
+         * It's async to allow for non-blocking operations in the future.
+
+         */
+
+      async function processAll() {
+        const text = textInput.value;
+
+        if (!text.trim()) {
+          alert("Please enter some text to analyze.");
+
+          return;
+        }
+
+        // Execute each NLP task.
+
+        detectLanguage(text);
+
+        analyzeSyntax(text);
+
+        performNER(text);
+
+        calculateTfIdf(text);
+
+        classifyWithOntology(text);
+
+        recognizeIntent(text);
+      }
+
+      /**
+
+         * 1. Language Detection using 'franc'
+
+         */
+
+      function detectLanguage(text) {
+        // franc returns a three-letter ISO 639-3 code.
+
+        const langCode = franc(text);
+
+        const result =
+          langCode === "und"
+            ? "Undetermined (text may be too short)"
+            : langCode;
+
+        document.getElementById("lang-result").textContent = result;
+      }
+
+      /**
+
+         * 2. Syntax Analysis using 'compromise.js'
+
+         */
+
+      function analyzeSyntax(text) {
+        const doc = nlp(text);
+
+        const nouns = doc.nouns().out("array");
+
+        const verbs = doc.verbs().out("array");
+
+        const result = `Nouns: ${nouns.join(", ") || "None"}\nVerbs: ${
+          verbs.join(", ") || "None"
+        }`;
+
+        document.getElementById("syntax-result").textContent = result;
+      }
+
+      /**
+
+         * 3. Named Entity Recognition (NER) using 'compromise.js'
+
+         */
+
+      function performNER(text) {
+        const doc = nlp(text);
+
+        const entities = doc.topics().out("json"); // .topics() is a good proxy for general entities.
+
+        const formattedResult = entities
+          .map((e) => `- ${e.text} (${e.tags.join(", ")})`)
+          .join("\n");
+
+        document.getElementById("ner-result").textContent =
+          formattedResult || "No specific entities found.";
+      }
+
+      /**
+
+         * 4. TF-IDF (Term Frequency-Inverse Document Frequency)
+
+         * INVARIANT #3: Implement custom, rule-based logic for TF-IDF.
+
+         */
+
+      function calculateTfIdf(text) {
+        // A simple, predefined corpus for demonstration.
+
+        const corpus = [
+          "The cat sat on the mat.",
+
+          "The dog chased the cat.",
+
+          "The bird flew high in the sky.",
+        ];
+
+        corpus.push(text); // Add our new document to the corpus for analysis.
+
+        const tokenize = (str) => str.toLowerCase().match(/\b\w+\b/g) || [];
+
+        const docTokens = corpus.map((doc) => tokenize(doc));
+
+        const uniqueTokens = new Set(docTokens.flat());
+
+        // Calculate Term Frequency (TF)
+
+        const tf = (term, documentTokens) => {
+          const termCount = documentTokens.filter((t) => t === term).length;
+
+          return termCount / documentTokens.length;
+        };
+
+        // Calculate Inverse Document Frequency (IDF)
+
+        const idf = (term, allDocsTokens) => {
+          const docsWithTerm = allDocsTokens.filter((doc) =>
+            doc.includes(term)
+          ).length;
+
+          return Math.log(allDocsTokens.length / (docsWithTerm + 1)); // +1 to avoid division by zero
+        };
+
+        const inputDocTokens = tokenize(text);
+
+        const scores = {};
+
+        for (const token of new Set(inputDocTokens)) {
+          const tfidf = tf(token, inputDocTokens) * idf(token, docTokens);
+
+          scores[token] = tfidf.toFixed(4);
+        }
+
+        // Sort by score and format output
+
+        const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+
+        const result = sortedScores
+          .map(([term, score]) => `${term}: ${score}`)
+          .join("\n");
+
+        document.getElementById("tfidf-result").textContent =
+          result || "No tokens to score.";
+      }
+
+      /**
+
+         * 5. Ontology-Based Classification
+
+         * INVARIANT #3: Implement custom, rule-based logic for ontology classification.
+
+         */
+
+      function classifyWithOntology(text) {
+        // A simple, predefined ontology.
+
+        const ontology = {
+          Technology: ["software", "AI", "computer", "data", "internet"],
+
+          Finance: ["investment", "stocks", "market", "money", "bank"],
+
+          Health: ["doctor", "medicine", "health", "fitness", "hospital"],
+        };
+
+        const tokens = text.toLowerCase().match(/\b\w+\b/g) || [];
+
+        const foundCategories = new Set();
+
+        tokens.forEach((token) => {
+          for (const category in ontology) {
+            if (ontology[category].includes(token)) {
+              foundCategories.add(category);
+            }
+          }
+        });
+
+        const result = Array.from(foundCategories).join(", ");
+
+        document.getElementById("ontology-result").textContent =
+          result || "No matching categories found.";
+      }
+
+      /**
+
+         * 6. Intent Recognition
+
+         * INVARIANT #3: Implement custom, rule-based logic for intent recognition.
+
+         */
+
+      function recognizeIntent(text) {
+        const lowerText = text.toLowerCase();
+
+        let intent = "Unknown";
+
+        // Simple rule-based intents
+
+        if (/\b(what is|explain|define)\b/.test(lowerText)) {
+          intent = "Information Seeking";
+        } else if (/\b(buy|purchase|order|get)\b/.test(lowerText)) {
+          intent = "Transactional";
+        } else if (/\b(how to|guide|help|instructions)\b/.test(lowerText)) {
+          intent = "Instructional";
+        } else if (/\b(compare|vs|versus)\b/.test(lowerText)) {
+          intent = "Comparison";
+        }
+
+        document.getElementById("intent-result").textContent = intent;
+      }
+    </script>
+  </body>
+</html>
